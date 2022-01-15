@@ -5,6 +5,7 @@ import { ethers } from "ethers";
 import Button from "./Button";
 
 import { SOURCE_CHAIN_ADDRESS, TOKEN_ADDRESS } from "src/constants";
+import { SourceChainBridge, TargetChainBridge, Token } from "src/types";
 
 const FormContainer = styled.div`
   height: 80%;
@@ -50,20 +51,26 @@ enum ChainId {
   "BSC Testnet" = 97,
 }
 
-const Form = (props: any) => {
+interface IProps {
+  contract: SourceChainBridge | TargetChainBridge | null;
+  library: any;
+  tokenContract: Token | null;
+  address: string;
+}
+
+const Form = (props: IProps) => {
   const [state, setState] = useState(State.bridge);
   const [upperChain, setUpperChain] = useState("");
   const [bottomChain, setBottomChain] = useState("");
   const [amount, setAmount] = useState("");
-  const [stepTwo, setStepTwo] = useState(false);
   const [message, setMessage] = useState("");
 
   const [bridgeHandler, setBridgeHandler] = useState<
-    (e: any, amount: string) => Promise<void>
+    (e: any, amount: string, upperChain: string) => Promise<void>
   >(() => bridgeTokens);
   const [stepTwoHandler, setStepTwoHandler] = useState<
-    (amount: string) => Promise<void> | undefined
-  >();
+    (e: any, amount: string) => Promise<void>
+  >(() => claimTokens);
 
   useEffect(() => {
     if (state === State.bridge) {
@@ -87,9 +94,14 @@ const Form = (props: any) => {
     }, 4000);
   };
 
-  const bridgeTokens = async (e: any, amountt: string) => {
+  const bridgeTokens = async (e: any, amountt: string, upperChain: string) => {
     if (!amountt) {
       setMessageHandler("You must provide tokens amount!");
+      return;
+    }
+
+    if (!props.tokenContract) {
+      setMessageHandler("Something went wrong!");
       return;
     }
 
@@ -110,17 +122,17 @@ const Form = (props: any) => {
         setMessage("");
         console.log(props.contract);
 
-        const tx = await props.contract.lock(
+        const tx = await (props.contract as SourceChainBridge).lock(
           ChainId[upperChain],
           TOKEN_ADDRESS,
-          ethers.utils.parseEther("1")
+          parsedAmount
         );
 
         props.library
           .waitForTransaction(tx.hash)
           .then(async () => {
             console.log("Success!");
-            setStepTwo(true);
+            localStorage.setItem("stepTwo", "1");
           })
           .catch((err: any) => {
             console.log(err);
@@ -139,12 +151,12 @@ const Form = (props: any) => {
     console.log("UnBridge!");
   };
 
-  const claimTokens = async (amount: string) => {
-    const tx = await props.contract.mint(
+  const claimTokens = async (e: any, amount: string) => {
+    const tx = await (props.contract as TargetChainBridge).mint(
       "Test Value",
       "TEST",
       18,
-      ethers.utils.parseEther(amount),
+      ethers.utils.parseEther("0.001"),
       props.address
     );
 
@@ -196,7 +208,9 @@ const Form = (props: any) => {
           <p>TO: {bottomChain}</p>
         </ChainContainer>
         {ChainId[upperChain] === props.library._network.chainId ? (
-          <BridgeButton onClick={(e: any) => bridgeHandler(e, amount)}>
+          <BridgeButton
+            onClick={(e: any) => bridgeHandler(e, amount, upperChain)}
+          >
             Bridge
           </BridgeButton>
         ) : (
@@ -204,10 +218,14 @@ const Form = (props: any) => {
         )}
         <p>{message}</p>
       </FormContainer>
-      <FormContainer style={{ display: stepTwo ? "block" : "none" }}>
+      <FormContainer
+        style={{ display: localStorage.getItem("stepTwo") ? "block" : "none" }}
+      >
         <p>Step 2</p>
         {ChainId[bottomChain] === props.library._network.chainId ? (
-          <BridgeButton onClick={stepTwoHandler}>Claim Tokens</BridgeButton>
+          <BridgeButton onClick={(e: any) => stepTwoHandler(e, amount)}>
+            Claim Tokens
+          </BridgeButton>
         ) : (
           `You must change your metamask network to "${bottomChain}"`
         )}

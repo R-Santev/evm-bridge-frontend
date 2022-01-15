@@ -16,7 +16,7 @@ import { Web3Provider } from "@ethersproject/providers";
 import { getChainData } from "./helpers/utilities";
 import Form from "./components/Form";
 
-import { getContract } from "./helpers/ethers";
+import ethersHelper from "./helpers/ethers";
 import {
   SOURCE_CHAIN_ADDRESS,
   TARGET_CHAIN_ADDRESS,
@@ -27,6 +27,14 @@ import {
   TARGET_CHAIN_ABI,
   TOKEN_ABI,
 } from "./constants/abis";
+import {
+  SourceChainBridge,
+  SourceChainBridge__factory,
+  TargetChainBridge,
+  TargetChainBridge__factory,
+  Token,
+  Token__factory,
+} from "./types";
 
 const SLayout = styled.div`
   position: relative;
@@ -74,8 +82,10 @@ const App = () => {
   const [chainId, setChainId] = useState<number>(1);
   const [pendingRequest, setPedningRequest] = useState<boolean>(false);
   const [result, setResult] = useState<any>();
-  const [contract, setContract] = useState<any>(null);
-  const [tokenContract, setTokenContract] = useState<any>(null);
+  const [contract, setContract] = useState<
+    SourceChainBridge | TargetChainBridge | null
+  >(null);
+  const [tokenContract, setTokenContract] = useState<Token | null>(null);
   const [info, setInfo] = useState<any>(null);
 
   useEffect(() => {
@@ -93,21 +103,27 @@ const App = () => {
 
     let contractAddress: string;
     let abi: any;
+    let contract: SourceChainBridge | TargetChainBridge | null = null;
     if (library._network.chainId === 42) {
       contractAddress = SOURCE_CHAIN_ADDRESS;
       abi = SOURCE_CHAIN_ABI;
+      contract = ethersHelper.getContract<
+        SourceChainBridge,
+        typeof SourceChainBridge__factory
+      >(SourceChainBridge__factory, contractAddress, library, address);
     } else {
       contractAddress = TARGET_CHAIN_ADDRESS;
       abi = TARGET_CHAIN_ABI;
+      contract = ethersHelper.getContract<
+        TargetChainBridge,
+        typeof TargetChainBridge__factory
+      >(TargetChainBridge__factory, contractAddress, library, address);
     }
 
-    const contract = getContract(contractAddress, abi, library, address);
-    const tokenContract = getContract(
-      TOKEN_ADDRESS,
-      TOKEN_ABI,
-      library,
-      address
-    );
+    const tokenContract = ethersHelper.getContract<
+      Token,
+      typeof Token__factory
+    >(Token__factory, TOKEN_ADDRESS, library, address);
 
     setContract(contract);
     setTokenContract(tokenContract);
