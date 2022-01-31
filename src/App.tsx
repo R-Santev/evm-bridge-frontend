@@ -1,19 +1,40 @@
-import * as React from 'react';
+import * as React from "react";
 import { useEffect, useState } from "react";
 
-import styled from 'styled-components';
+import styled from "styled-components";
 
-import Web3Modal from 'web3modal';
+import Web3Modal from "web3modal";
 // @ts-ignore
-import WalletConnectProvider from '@walletconnect/web3-provider';
-import Column from './components/Column';
-import Wrapper from './components/Wrapper';
-import Header from './components/Header';
-import Loader from './components/Loader';
-import ConnectButton from './components/ConnectButton';
+import WalletConnectProvider from "@walletconnect/web3-provider";
+import Column from "./components/Column";
+import Wrapper from "./components/Wrapper";
+import Header from "./components/Header";
+import Loader from "./components/Loader";
+import ConnectButton from "./components/ConnectButton";
 
-import { Web3Provider } from '@ethersproject/providers';
-import { getChainData } from './helpers/utilities';
+import { Web3Provider } from "@ethersproject/providers";
+import { getChainData } from "./helpers/utilities";
+import Form from "./components/Form";
+
+import ethersHelper from "./helpers/ethers";
+import {
+  SOURCE_CHAIN_ADDRESS,
+  TARGET_CHAIN_ADDRESS,
+  TOKEN_ADDRESS,
+} from "./constants";
+import {
+  SOURCE_CHAIN_ABI,
+  TARGET_CHAIN_ABI,
+  TOKEN_ABI,
+} from "./constants/abis";
+import {
+  SourceChainBridge,
+  SourceChainBridge__factory,
+  TargetChainBridge,
+  TargetChainBridge__factory,
+  Token,
+  Token__factory,
+} from "./types";
 
 const SLayout = styled.div`
   position: relative;
@@ -40,6 +61,7 @@ const SContainer = styled.div`
 
 const SLanding = styled(Column)`
   height: 600px;
+  flex-direction: row;
 `;
 
 // @ts-ignore
@@ -52,7 +74,6 @@ const SBalances = styled(SLanding)`
 
 let web3Modal: Web3Modal;
 const App = () => {
-
   const [provider, setProvider] = useState<any>();
   const [fetching, setFetching] = useState<boolean>(false);
   const [address, setAddress] = useState<string>("");
@@ -61,24 +82,59 @@ const App = () => {
   const [chainId, setChainId] = useState<number>(1);
   const [pendingRequest, setPedningRequest] = useState<boolean>(false);
   const [result, setResult] = useState<any>();
-  const [libraryContract, setLibraryContract] = useState<any>(null);
+  const [contract, setContract] = useState<
+    SourceChainBridge | TargetChainBridge | null
+  >(null);
+  const [tokenContract, setTokenContract] = useState<Token | null>(null);
   const [info, setInfo] = useState<any>(null);
 
   useEffect(() => {
     createWeb3Modal();
-    
+
     if (web3Modal.cachedProvider) {
       onConnect();
     }
-
   }, []);
+
+  useEffect(() => {
+    if (!library) {
+      return;
+    }
+
+    let contractAddress: string;
+    let abi: any;
+    let contract: SourceChainBridge | TargetChainBridge | null = null;
+    if (library._network.chainId === 42) {
+      contractAddress = SOURCE_CHAIN_ADDRESS;
+      abi = SOURCE_CHAIN_ABI;
+      contract = ethersHelper.getContract<
+        SourceChainBridge,
+        typeof SourceChainBridge__factory
+      >(SourceChainBridge__factory, contractAddress, library, address);
+    } else {
+      contractAddress = TARGET_CHAIN_ADDRESS;
+      abi = TARGET_CHAIN_ABI;
+      contract = ethersHelper.getContract<
+        TargetChainBridge,
+        typeof TargetChainBridge__factory
+      >(TargetChainBridge__factory, contractAddress, library, address);
+    }
+
+    const tokenContract = ethersHelper.getContract<
+      Token,
+      typeof Token__factory
+    >(Token__factory, TOKEN_ADDRESS, library, address);
+
+    setContract(contract);
+    setTokenContract(tokenContract);
+  }, [library, address]);
 
   function createWeb3Modal() {
     web3Modal = new Web3Modal({
       network: getNetwork(),
       cacheProvider: true,
-      providerOptions: getProviderOptions()
-    })
+      providerOptions: getProviderOptions(),
+    });
   }
 
   const onConnect = async () => {
@@ -89,54 +145,50 @@ const App = () => {
 
     const network = await library.getNetwork();
 
-    const address = provider.selectedAddress ? provider.selectedAddress : provider?.accounts[0];
+    const address = provider.selectedAddress
+      ? provider.selectedAddress
+      : provider?.accounts[0];
     setLibrary(library);
     setChainId(network.chainId);
     setAddress(address);
     setConnected(true);
-    
+
     await subscribeToProviderEvents(provider);
   };
 
-  const subscribeToProviderEvents = async (provider:any) => {
+  const subscribeToProviderEvents = async (provider: any) => {
     if (!provider.on) {
       return;
     }
 
     provider.on("accountsChanged", changedAccount);
-    provider.on("networkChanged", networkChanged);
+    provider.on("networkChanged", chainChanged);
     provider.on("close", resetApp);
 
-    await web3Modal.off('accountsChanged');
+    await web3Modal.off("accountsChanged");
   };
 
-  const unSubscribe = async (provider:any) => {
-    // Workaround for metamask widget > 9.0.3 (provider.off is undefined);
-    window.location.reload(false);
-    if (!provider.off) {
+  const unSubscribe = async (provider: any) => {
+    if (!provider || !provider.removeListener) {
       return;
     }
 
-    provider.off("accountsChanged", changedAccount);
-    provider.off("networkChanged", networkChanged);
-    provider.off("close", resetApp);
-  }
+    provider.removeListener("accountsChanged", changedAccount);
+    provider.removeListener("chainChanged", chainChanged);
+    provider.removeListener("close", resetApp);
+  };
 
   const changedAccount = async (accounts: string[]) => {
-    if(!accounts.length) {
-      // Metamask Lock fire an empty accounts array 
+    if (!accounts.length) {
+      // Metamask Lock fire an empty accounts array
       await resetApp();
     } else {
       setAddress(accounts[0]);
     }
-  }
+  };
 
-  const networkChanged = async (networkId: number) => {
-    const library = new Web3Provider(provider);
-    const network = await library.getNetwork();
-    const chainId = network.chainId;
-    setChainId(chainId);
-    setLibrary(library);
+  function chainChanged(_chainId: number) {
+    window.location.reload();
   }
 
   function getNetwork() {
@@ -148,20 +200,18 @@ const App = () => {
       walletconnect: {
         package: WalletConnectProvider,
         options: {
-          infuraId: process.env.REACT_APP_INFURA_ID
-        }
-      }
+          infuraId: process.env.REACT_APP_INFURA_ID,
+        },
+      },
     };
     return providerOptions;
-  };
+  }
 
   const resetApp = async () => {
-    
     await web3Modal.clearCachedProvider();
     localStorage.removeItem("WEB3_CONNECT_CACHED_PROVIDER");
     localStorage.removeItem("walletconnect");
     await unSubscribe(provider);
-
   };
 
   const resetState = () => {
@@ -172,9 +222,9 @@ const App = () => {
     setChainId(1);
     setPedningRequest(false);
     setResult(null);
-    setLibraryContract(null);
+    setContract(null);
     setInfo(null);
-  }
+  };
 
   return (
     <SLayout>
@@ -193,13 +243,22 @@ const App = () => {
               </SContainer>
             </Column>
           ) : (
-              <SLanding center>
-                {!connected && <ConnectButton onClick={onConnect} />}
-              </SLanding>
-            )}
+            <SLanding center>
+              {!connected ? (
+                <ConnectButton onClick={onConnect} />
+              ) : (
+                <Form
+                  library={library}
+                  contract={contract}
+                  tokenContract={tokenContract}
+                  address={address}
+                />
+              )}
+            </SLanding>
+          )}
         </SContent>
       </Column>
     </SLayout>
   );
-}
+};
 export default App;
