@@ -6,15 +6,15 @@ import styled from "styled-components";
 import Web3Modal from "web3modal";
 // @ts-ignore
 import WalletConnectProvider from "@walletconnect/web3-provider";
-import Column from "./components/Column";
-import Wrapper from "./components/Wrapper";
+import Column from "./components/StyledComponents/Column";
+import Wrapper from "./components/StyledComponents/Wrapper";
 import Header from "./components/Header";
-import Loader from "./components/Loader";
-import ConnectButton from "./components/ConnectButton";
+import Loader from "./components/StyledComponents/Loader";
+import ConnectButton from "./components/StyledComponents/ConnectButton";
 
 import { Web3Provider } from "@ethersproject/providers";
 import { getChainData } from "./helpers/utilities";
-import Form from "./components/Form";
+// import Form from "./components/Form";
 
 import ethersHelper from "./helpers/ethers";
 import {
@@ -35,6 +35,7 @@ import {
   Token,
   Token__factory,
 } from "./types";
+import Dropdown from "./components/ChainDropdown";
 
 const SLayout = styled.div`
   position: relative;
@@ -236,6 +237,9 @@ const App = () => {
           killSession={resetApp}
         />
         <SContent>
+          <p>
+            Bridge "TEST" tokens between the Kovan and the BSC Testnet networks
+          </p>
           {fetching ? (
             <Column center>
               <SContainer>
@@ -247,12 +251,12 @@ const App = () => {
               {!connected ? (
                 <ConnectButton onClick={onConnect} />
               ) : (
-                <Form
-                  library={library}
-                  contract={contract}
-                  tokenContract={tokenContract}
-                  address={address}
-                />
+                // <Form
+                //   library={library}
+                //   contract={contract}
+                //   tokenContract={tokenContract}
+                //   address={address}
+                // />
               )}
             </SLanding>
           )}
