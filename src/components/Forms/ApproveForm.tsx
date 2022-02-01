@@ -1,4 +1,11 @@
-import React, { useState } from "react";
+import { Web3Provider } from "@ethersproject/providers";
+import React, { ChangeEvent, useState } from "react";
+import {
+  ISupportedAsset,
+  IToken,
+  SUPPORTED_ASSETS,
+} from "src/constants/supportedAssets";
+import ChainDropdown from "../ChainDropdown";
 
 import {
   FormContainer,
@@ -7,33 +14,60 @@ import {
   BridgeButton,
 } from "./styledComponents";
 
-const ApproveForm = (props: any) => {
+export interface IApproveFormProps {
+  library: Web3Provider;
+  from: ISupportedAsset;
+  to: ISupportedAsset;
+  token: IToken;
+  setFrom: React.Dispatch<React.SetStateAction<ISupportedAsset>>;
+  setTo: React.Dispatch<React.SetStateAction<ISupportedAsset>>;
+  setToken: React.Dispatch<React.SetStateAction<IToken>>;
+  amount: number;
+  setAmount: React.Dispatch<React.SetStateAction<number>>;
+}
+
+const ApproveForm = (props: IApproveFormProps) => {
+  const initialMessage =
+    "Give permissions to the contract to bridge your tokens.";
+  const [notification, setNotification] = useState<string>(initialMessage);
+  const handleAmount = (e: ChangeEvent<HTMLInputElement>) => {
+    props.setAmount(e.target.valueAsNumber);
+  };
+
   return (
     <FormContainer>
       <ChainContainer>
         <p>FROM: </p>
-        <Dropdown />
-
+        <ChainDropdown
+          choosen={props.from}
+          data={SUPPORTED_ASSETS}
+          setChoosen={props.setFrom}
+        />
         <Input
           type="number"
           placeholder="Amount"
           onChange={(e) => handleAmount(e)}
         />
       </ChainContainer>
-      <Button onClick={handleState}>Switch</Button>
+      <Button onClick={switchAssets}>Switch</Button>
       <ChainContainer>
-        <p>TO: {bottomChain}</p>
+        <p>TO: </p>
+        <ChainDropdown
+          choosen={props.to}
+          data={SUPPORTED_ASSETS}
+          setChoosen={props.setTo}
+        />
       </ChainContainer>
-      {ChainId[upperChain] === props.library._network.chainId ? (
+      {props.from.chainId === props.library._network.chainId ? (
         <BridgeButton
           onClick={(e: any) => bridgeHandler(e, amount, upperChain)}
         >
-          Bridge
+          Approve
         </BridgeButton>
       ) : (
-        `You must change your metamask network to "${upperChain}"`
+        `You must change your metamask network to "${props.from.chainId}"`
       )}
-      <p>{message}</p>
+      <p>{notification}</p>
     </FormContainer>
   );
 };

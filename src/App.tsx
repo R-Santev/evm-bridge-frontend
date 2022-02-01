@@ -36,6 +36,7 @@ import {
   Token__factory,
 } from "./types";
 import Dropdown from "./components/ChainDropdown";
+import FormsWrapper from "./components/Forms/FormsWrapper";
 
 const SLayout = styled.div`
   position: relative;
@@ -251,8 +252,8 @@ const App = () => {
               {!connected ? (
                 <ConnectButton onClick={onConnect} />
               ) : (
+                <FormsWrapper library={library} />
                 // <Form
-                //   library={library}
                 //   contract={contract}
                 //   tokenContract={tokenContract}
                 //   address={address}

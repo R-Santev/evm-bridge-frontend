@@ -6,6 +6,8 @@ import {
 } from "src/constants/supportedAssets";
 
 import ApproveForm from "./ApproveForm";
+import BridgeForm from "./BridgeForm";
+import ClaimForm from "./ClaimForm";
 
 enum State {
   approve = 0,
@@ -20,27 +22,41 @@ const FormsWrapper = (props: any) => {
   const [to, setTo] = useState<ISupportedAsset>(SUPPORTED_ASSETS[1]);
   const [token, setToken] = useState<IToken>(SUPPORTED_ASSETS[0].tokens[0]);
 
+  const [amount, setAmount] = useState<number>(0);
+
   switch (state) {
     case State.approve:
       return (
         <ApproveForm
+          library={props.library}
           from={from}
           to={to}
           token={token}
           setFrom={setFrom}
           setTo={setTo}
           setToken={setToken}
+          amount={amount}
+          setAmount={setAmount}
         />
       );
     case State.bridge:
       return <BridgeForm />;
-      break;
     case State.claim:
       return <ClaimForm />;
-      break;
     default:
-      props.resetApp();
-      break;
+      return (
+        <ApproveForm
+          library={props.library}
+          from={from}
+          to={to}
+          token={token}
+          setFrom={setFrom}
+          setTo={setTo}
+          setToken={setToken}
+          amount={amount}
+          setAmount={setAmount}
+        />
+      );
   }
 };
 

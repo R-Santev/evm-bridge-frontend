@@ -1,7 +1,10 @@
-import React, { Component } from "react";
+import React, { Component, useState } from "react";
 import styled from "styled-components";
 
-import { SUPPORTED_ASSETS } from "../constants/supportedAssets";
+import {
+  ISupportedAsset,
+  SUPPORTED_ASSETS,
+} from "../constants/supportedAssets";
 
 const StyledUl = styled.ul`
   list-style-type: none;
@@ -65,23 +68,19 @@ const SubA = styled.a`
 `;
 
 export interface IDropdownProps {
-  data: SelectOpt[];
-  handleClick: () => void;
-}
-
-export interface SelectOpt {
-  label: string;
-  value: string;
+  choosen: ISupportedAsset;
+  data: ISupportedAsset[];
+  setChoosen: React.Dispatch<React.SetStateAction<ISupportedAsset>>;
 }
 
 const ChainDropdown = (props: IDropdownProps) => {
   return (
     <StyledUl>
       <DropDownLi>
-        <Dropbtn>{"DropDown"}</Dropbtn>
+        <Dropbtn>{props.choosen.name}</Dropbtn>
         <DropDownContent>
-          {SUPPORTED_ASSETS.map((el) => (
-            <SubA onClick={props.handleClick}>Link 1</SubA>
+          {props.data.map((el) => (
+            <SubA onClick={() => props.setChoosen(el)}>{el.name}</SubA>
           ))}
         </DropDownContent>
       </DropDownLi>
