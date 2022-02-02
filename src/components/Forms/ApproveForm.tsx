@@ -1,5 +1,5 @@
 import { Web3Provider } from "@ethersproject/providers";
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import {
   ISupportedAsset,
   IToken,
@@ -29,7 +29,43 @@ export interface IApproveFormProps {
 const ApproveForm = (props: IApproveFormProps) => {
   const initialMessage =
     "Give permissions to the contract to bridge your tokens.";
+
   const [notification, setNotification] = useState<string>(initialMessage);
+
+  const onApprove = (_e: any) => {
+    console.log(props.amount);
+    return;
+    // if (!amountt) {
+    //   setMessageHandler("You must provide tokens amount!");
+    //   return;
+    // }
+    // if (!props.tokenContract) {
+    //   setMessageHandler("Something went wrong!");
+    //   return;
+    // }
+    // const parsedAmount = ethers.utils.parseEther(amountt);
+    // const approveTx = await props.tokenContract.approve(
+    //   SOURCE_CHAIN_ADDRESS,
+    //   parsedAmount
+    // );
+    // if (!approveTx) {
+    //   return;
+    // }
+    // setMessage("Processing approve transaction...");
+    // props.library.waitForTransaction(approveTx.hash).then(async () => {
+    //   setMessage("");
+    //   console.log(props.contract);
+    // });
+  };
+
+  const notify = async (message: string) => {
+    setNotification(message);
+
+    setTimeout(() => {
+      setNotification("");
+    }, 4000);
+  };
+
   const handleAmount = (e: ChangeEvent<HTMLInputElement>) => {
     props.setAmount(e.target.valueAsNumber);
   };
@@ -49,7 +85,7 @@ const ApproveForm = (props: IApproveFormProps) => {
           onChange={(e) => handleAmount(e)}
         />
       </ChainContainer>
-      <Button onClick={switchAssets}>Switch</Button>
+      {/* <Button onClick={switchAssets}>Switch</Button> */}
       <ChainContainer>
         <p>TO: </p>
         <ChainDropdown
@@ -59,11 +95,7 @@ const ApproveForm = (props: IApproveFormProps) => {
         />
       </ChainContainer>
       {props.from.chainId === props.library._network.chainId ? (
-        <BridgeButton
-          onClick={(e: any) => bridgeHandler(e, amount, upperChain)}
-        >
-          Approve
-        </BridgeButton>
+        <BridgeButton onClick={(e: any) => onApprove(e)}>Approve</BridgeButton>
       ) : (
         `You must change your metamask network to "${props.from.chainId}"`
       )}

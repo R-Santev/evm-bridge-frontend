@@ -80,7 +80,9 @@ const ChainDropdown = (props: IDropdownProps) => {
         <Dropbtn>{props.choosen.name}</Dropbtn>
         <DropDownContent>
           {props.data.map((el) => (
-            <SubA onClick={() => props.setChoosen(el)}>{el.name}</SubA>
+            <SubA key={el.name} onClick={() => props.setChoosen(el)}>
+              {el.name}
+            </SubA>
           ))}
         </DropDownContent>
       </DropDownLi>
