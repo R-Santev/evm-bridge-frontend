@@ -7,6 +7,8 @@ import { FormContainer, BridgeButton } from "./styledComponents";
 import { Bridge, Token } from "src/types";
 import { State } from "./FormsWrapper";
 import Loader from "../StyledComponents/Loader";
+import { ethers } from "ethers";
+import { getChainData } from "./../../helpers/utilities";
 
 export interface IClaimFormProps {
   library: Web3Provider;
@@ -17,6 +19,7 @@ export interface IClaimFormProps {
   to: ISupportedAsset;
   amount: string;
   userAddress: string;
+  isWrapped: boolean | undefined;
 }
 
 const ClaimForm = (props: IClaimFormProps) => {
@@ -26,6 +29,9 @@ const ClaimForm = (props: IClaimFormProps) => {
   const [tokenSymbol, setTokenSymbol] = useState<string | undefined>();
   const [isWrapped, setIsWrapped] = useState<boolean | undefined>();
   const [tokenNativeAddress, setTokenNativeAddress] = useState<
+    string | undefined
+  >();
+  const [tokenNativeUnlockAddress, setTokenNativeUnlockAddress] = useState<
     string | undefined
   >();
 
@@ -60,6 +66,10 @@ const ClaimForm = (props: IClaimFormProps) => {
       })
       .then((wrapped) => {
         setIsWrapped(wrapped);
+        return props.contract.nativeTokens(props.tokenContract!.address);
+      })
+      .then((unlockToken) => {
+        setTokenNativeUnlockAddress(unlockToken);
       })
       .catch((err) => {
         console.log(err);
@@ -80,20 +90,7 @@ const ClaimForm = (props: IClaimFormProps) => {
       return;
     }
 
-    const isWrapped = await props.tokenContract
-      .owner()
-      .then((owner) => {
-        if (owner === props.contract.address) {
-          return true;
-        } else {
-          return false;
-        }
-      })
-      .catch((err) => {
-        return false;
-      });
-
-    if (isWrapped) {
+    if (props.isWrapped) {
       unlockTokens();
     } else {
       mintTokens();
@@ -101,8 +98,18 @@ const ClaimForm = (props: IClaimFormProps) => {
   };
 
   const unlockTokens = async () => {
+    console.log("here");
+    console.log(tokenNativeUnlockAddress);
+    console.log(props.amount);
+    console.log(props.userAddress);
+    console.log(props.contract);
+
     const tx = await props.contract
-      .unlock(tokenNativeAddress!, props.amount, props.userAddress)
+      .unlock(
+        tokenNativeUnlockAddress!,
+        ethers.BigNumber.from(props.amount),
+        props.userAddress
+      )
       .catch((err) => {
         notify(err.message);
       });
@@ -110,14 +117,14 @@ const ClaimForm = (props: IClaimFormProps) => {
       return;
     }
 
-    setNotification(`Processing claim transaction... Tx Hash: ${tx.hash}`);
+    setNotification(`Processing transaction (unlock)... Tx Hash: ${tx.hash}`);
 
     props.library
       .waitForTransaction(tx.hash)
       .then(async () => {
         notify("Success!");
         setTimeout(() => {
-          props.setState(State.claim);
+          window.location.reload();
         }, 4000);
       })
       .catch((err) => {
@@ -126,8 +133,20 @@ const ClaimForm = (props: IClaimFormProps) => {
   };
 
   const mintTokens = async () => {
+    console.log("here");
+    console.log(tokenNativeAddress);
+    console.log(props.amount);
+    console.log(props.userAddress);
+    console.log(props.contract);
     const tx = await props.contract
-      .mint(tokenName!, tokenSymbol!, 18, props.amount, props.userAddress)
+      .mint(
+        tokenName!,
+        tokenSymbol!,
+        18,
+        ethers.BigNumber.from(props.amount).sub("100000000000000"),
+        props.userAddress,
+        tokenNativeAddress!
+      )
       .catch((err) => {
         notify(err.message);
       });
@@ -135,7 +154,7 @@ const ClaimForm = (props: IClaimFormProps) => {
       return;
     }
 
-    setNotification(`Processing bridge transaction... Tx Hash: ${tx.hash}`);
+    setNotification(`Processing transaction (mint)... Tx Hash: ${tx.hash}`);
 
     props.library
       .waitForTransaction(tx.hash)
@@ -157,7 +176,7 @@ const ClaimForm = (props: IClaimFormProps) => {
 
         notify("Success!");
         setTimeout(() => {
-          props.setState(State.claim);
+          window.location.reload();
         }, 4000);
       })
       .catch((err) => {
@@ -176,7 +195,9 @@ const ClaimForm = (props: IClaimFormProps) => {
         {props.to.chainId === props.library._network.chainId ? (
           <BridgeButton onClick={(e: any) => onClaim(e)}>Claim</BridgeButton>
         ) : (
-          `You must change your wallet network to "${props.to.chainId}"`
+          `You must change your wallet network to "${
+            getChainData(props.to.chainId).name
+          }"`
         )}
         <p>{notification}</p>
       </FormContainer>

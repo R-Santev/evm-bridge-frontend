@@ -9,6 +9,7 @@ import {
 import ChainDropdown from "../ChainDropdown";
 import Button from "../StyledComponents/Button";
 import ethersHelper from "./../../helpers/ethers";
+import { getChainData } from "./../../helpers/utilities";
 
 import {
   FormContainer,
@@ -158,7 +159,9 @@ const ApproveForm = (props: IApproveFormProps) => {
     if (props.from.chainId !== props.library._network.chainId) {
       setIsValidAddress(false);
       setAddressError(
-        `You must change your wallet network to "${props.from.chainId}"`
+        `You must change your wallet network to "${
+          getChainData(props.from.chainId).name
+        }"`
       );
       setTokenBalance(null);
       props.setToken(undefined);
@@ -293,7 +296,9 @@ const ApproveForm = (props: IApproveFormProps) => {
       {props.from.chainId === props.library._network.chainId ? (
         <BridgeButton onClick={(e: any) => onApprove(e)}>Approve</BridgeButton>
       ) : (
-        `You must change your wallet network to "${props.from.chainId}"`
+        `You must change your wallet network to "${
+          getChainData(props.from.chainId).name
+        }"`
       )}
       <p>{notification}</p>
     </FormContainer>

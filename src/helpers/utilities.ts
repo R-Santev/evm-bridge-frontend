@@ -1,14 +1,15 @@
 import supportedChains from "./chains";
-import Noty from 'noty';
-import '../../node_modules/noty/lib/noty.css';  
-import '../../node_modules/noty/lib/themes/mint.css';  
+import Noty from "noty";
+import "../../node_modules/noty/lib/noty.css";
+import "../../node_modules/noty/lib/themes/mint.css";
+import { IChainData } from "./types";
 
 const NOTIFICATION_TIMEOUT = 3500;
 
 export function capitalize(string: string): string {
   return string
     .split(" ")
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(" ");
 }
 
@@ -25,7 +26,7 @@ export function ellipseText(
   const result =
     text
       .split(" ")
-      .filter(word => {
+      .filter((word) => {
         currentLength += word.length;
         if (ellipse || currentLength >= _maxLength) {
           ellipse = true;
@@ -106,13 +107,13 @@ export function isMobile(): boolean {
   return mobile;
 }
 
-export function getChainData(chainId: number): any {
+export function getChainData(chainId: number): IChainData {
   let chainData = supportedChains.filter(
     (chain: any) => chain.chain_id === chainId
   )[0];
 
   if (!chainData) {
-    chainData = supportedChains[0]
+    chainData = supportedChains[0];
   }
 
   const API_KEY = process.env.REACT_APP_INFURA_ID;
@@ -126,18 +127,17 @@ export function getChainData(chainId: number): any {
 
     return {
       ...chainData,
-      rpc_url: rpcUrl
+      rpc_url: rpcUrl,
     };
   }
 
   return chainData;
 }
 
-export function showNotification(text:string) {
-    new Noty({ 
-      text,
-      timeout: NOTIFICATION_TIMEOUT,
-      type: 'success'
-      
+export function showNotification(text: string) {
+  new Noty({
+    text,
+    timeout: NOTIFICATION_TIMEOUT,
+    type: "success",
   }).show();
 }

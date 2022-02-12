@@ -25,6 +25,7 @@ const FormsWrapper = (props: any) => {
   const [to, setTo] = useState<ISupportedAsset>(SUPPORTED_ASSETS[1]);
   const [token, setToken] = useState<string | undefined>();
   const [tokenContract, setTokenContract] = useState<Token | null>(null);
+  const [isWrapped, setIsWrapped] = useState<boolean | undefined>();
 
   const [amount, setAmount] = useState<string>("0");
 
@@ -72,6 +73,7 @@ const FormsWrapper = (props: any) => {
           from={from}
           to={to}
           amount={amount}
+          setIsWrapped={setIsWrapped}
         />
       );
 
@@ -87,6 +89,7 @@ const FormsWrapper = (props: any) => {
           to={to}
           amount={amount}
           userAddress={props.userAddress}
+          isWrapped={isWrapped}
         />
       );
     default:

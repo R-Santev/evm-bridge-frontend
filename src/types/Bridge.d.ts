@@ -23,7 +23,8 @@ interface BridgeInterface extends ethers.utils.Interface {
   functions: {
     "burn(address,uint256)": FunctionFragment;
     "lock(uint8,address,uint256)": FunctionFragment;
-    "mint(string,string,uint8,uint256,address)": FunctionFragment;
+    "mint(string,string,uint8,uint256,address,address)": FunctionFragment;
+    "nativeTokens(address)": FunctionFragment;
     "owner()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "serviceFee()": FunctionFragment;
@@ -42,7 +43,11 @@ interface BridgeInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "mint",
-    values: [string, string, BigNumberish, BigNumberish, string]
+    values: [string, string, BigNumberish, BigNumberish, string, string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "nativeTokens",
+    values: [string]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
@@ -66,6 +71,10 @@ interface BridgeInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "lock", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "nativeTokens",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
@@ -193,8 +202,11 @@ export class Bridge extends BaseContract {
       _tokenDecimals: BigNumberish,
       _amount: BigNumberish,
       _receiver: string,
+      _nativeToken: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    nativeTokens(arg0: string, overrides?: CallOverrides): Promise<[string]>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
@@ -238,8 +250,11 @@ export class Bridge extends BaseContract {
     _tokenDecimals: BigNumberish,
     _amount: BigNumberish,
     _receiver: string,
+    _nativeToken: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  nativeTokens(arg0: string, overrides?: CallOverrides): Promise<string>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
@@ -283,8 +298,11 @@ export class Bridge extends BaseContract {
       _tokenDecimals: BigNumberish,
       _amount: BigNumberish,
       _receiver: string,
+      _nativeToken: string,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<string>;
+
+    nativeTokens(arg0: string, overrides?: CallOverrides): Promise<string>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
@@ -417,8 +435,11 @@ export class Bridge extends BaseContract {
       _tokenDecimals: BigNumberish,
       _amount: BigNumberish,
       _receiver: string,
+      _nativeToken: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    nativeTokens(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -463,7 +484,13 @@ export class Bridge extends BaseContract {
       _tokenDecimals: BigNumberish,
       _amount: BigNumberish,
       _receiver: string,
+      _nativeToken: string,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    nativeTokens(
+      arg0: string,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;

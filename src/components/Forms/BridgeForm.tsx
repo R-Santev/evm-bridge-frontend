@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { ISupportedAsset } from "src/constants/supportedAssets";
 
 import { FormContainer, BridgeButton } from "./styledComponents";
+import { getChainData } from "./../../helpers/utilities";
 
 import { Bridge, Token } from "src/types";
 import { State } from "./FormsWrapper";
@@ -15,6 +16,7 @@ export interface IBridgeFormProps {
   from: ISupportedAsset;
   to: ISupportedAsset;
   amount: string;
+  setIsWrapped: React.Dispatch<React.SetStateAction<boolean | undefined>>;
 }
 
 const BridgeForm = (props: IBridgeFormProps) => {
@@ -49,6 +51,7 @@ const BridgeForm = (props: IBridgeFormProps) => {
         return false;
       });
 
+    props.setIsWrapped(isWrapped);
     if (isWrapped) {
       burnTokens();
     } else {
@@ -70,7 +73,7 @@ const BridgeForm = (props: IBridgeFormProps) => {
       return;
     }
 
-    setNotification(`Processing bridge transaction... Tx Hash: ${tx.hash}`);
+    setNotification(`Processing transaction (lock)... Tx Hash: ${tx.hash}`);
 
     props.library
       .waitForTransaction(tx.hash)
@@ -95,7 +98,7 @@ const BridgeForm = (props: IBridgeFormProps) => {
       return;
     }
 
-    setNotification(`Processing bridge transaction... Tx Hash: ${tx.hash}`);
+    setNotification(`Processing transaction (burn)... Tx Hash: ${tx.hash}`);
 
     props.library
       .waitForTransaction(tx.hash)
@@ -115,7 +118,9 @@ const BridgeForm = (props: IBridgeFormProps) => {
       {props.from.chainId === props.library._network.chainId ? (
         <BridgeButton onClick={(e: any) => onBridge(e)}>Bridge</BridgeButton>
       ) : (
-        `You must change your wallet network to "${props.from.chainId}"`
+        `You must change your wallet network to "${
+          getChainData(props.from.chainId).name
+        }"`
       )}
       <p>{notification}</p>
     </FormContainer>
