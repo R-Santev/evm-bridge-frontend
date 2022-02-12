@@ -27,35 +27,6 @@
 //   const [amount, setAmount] = useState("");
 //   const [message, setMessage] = useState("");
 
-//   const [bridgeHandler, setBridgeHandler] = useState<
-//     (e: any, amount: string, upperChain: string) => Promise<void>
-//   >(() => bridgeTokens);
-//   const [stepTwoHandler, setStepTwoHandler] = useState<
-//     (e: any, amount: string) => Promise<void>
-//   >(() => claimTokens);
-
-//   useEffect(() => {
-//     if (state === State.bridge) {
-//       setUpperChain(sourceChain);
-//       setBottomChain(targetChain);
-//       setBridgeHandler(() => bridgeTokens);
-//       setStepTwoHandler(() => claimTokens);
-//     } else {
-//       setUpperChain(targetChain);
-//       setBottomChain(sourceChain);
-//       setBridgeHandler(() => unBridgeTokens);
-//       setStepTwoHandler(() => burnTokens);
-//     }
-//   }, [state]);
-
-//   const setMessageHandler = async (message: string) => {
-//     setMessage(message);
-
-//     setTimeout(() => {
-//       setMessage("");
-//     }, 4000);
-//   };
-
 //   const bridgeTokens = async (e: any, amountt: string, upperChain: string) => {
 //     if (!amountt) {
 //       setMessageHandler("You must provide tokens amount!");
@@ -114,7 +85,7 @@
 //   };
 
 //   const claimTokens = async (e: any, amount: string) => {
-//     const tx = await (props.contract as TargetChainBridge).mint(
+//     const tx = await (props.contract).mint(
 //       "Test Value",
 //       "TEST",
 //       18,
@@ -136,64 +107,6 @@
 //       });
 //   };
 
-//   const burnTokens = async () => {
-//     console.log("burn!");
-//   };
-
-//   const handleState = () => {
-//     if (state === State.bridge) {
-//       setState(State.un_bridge);
-//     } else {
-//       setState(State.bridge);
-//     }
-//   };
-
-//   const handleAmount = (e: ChangeEvent<HTMLInputElement>) => {
-//     console.log(e.target.value);
-
-//     setAmount(e.target.value);
-//   };
-
-//   return (
-//     <>
-//       <FormContainer>
-//         <ChainContainer>
-//           <p>FROM: {upperChain}</p>
-//           <Input
-//             type="number"
-//             placeholder="Amount"
-//             onChange={(e) => handleAmount(e)}
-//           />
-//         </ChainContainer>
-//         <Button onClick={handleState}>Switch</Button>
-//         <ChainContainer>
-//           <p>TO: {bottomChain}</p>
-//         </ChainContainer>
-//         {ChainId[upperChain] === props.library._network.chainId ? (
-//           <BridgeButton
-//             onClick={(e: any) => bridgeHandler(e, amount, upperChain)}
-//           >
-//             Bridge
-//           </BridgeButton>
-//         ) : (
-//           `You must change your metamask network to "${upperChain}"`
-//         )}
-//         <p>{message}</p>
-//       </FormContainer>
-//       <FormContainer
-//         style={{ display: localStorage.getItem("stepTwo") ? "block" : "none" }}
-//       >
-//         <p>Step 2</p>
-//         {ChainId[bottomChain] === props.library._network.chainId ? (
-//           <BridgeButton onClick={(e: any) => stepTwoHandler(e, amount)}>
-//             Claim Tokens
-//           </BridgeButton>
-//         ) : (
-//           `You must change your metamask network to "${bottomChain}"`
-//         )}
-//       </FormContainer>
-//     </>
-//   );
 // };
 
 // export default Form;

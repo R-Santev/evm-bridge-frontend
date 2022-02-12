@@ -24,11 +24,21 @@ export const ChainContainer = styled.div`
   flex-direction: column;
   border: 1px solid blue;
   margin: 15px;
+  padding: 8px;
 `;
 
-export const Input = styled.input``;
+export const Input = styled.input`
+  margin-top: 8px;
+  border-radius: 4px;
+`;
 
 export const BridgeButton = styled(Button)`
   background-color: purple;
   margin-bottom: 15px;
+`;
+
+export const ErrorMessage = styled.p`
+  color: red;
+  padding: 1px;
+  margin: 1px;
 `;

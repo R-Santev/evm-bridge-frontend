@@ -21,12 +21,29 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
 interface BridgeInterface extends ethers.utils.Interface {
   functions: {
+    "burn(address,uint256)": FunctionFragment;
+    "lock(uint8,address,uint256)": FunctionFragment;
+    "mint(string,string,uint8,uint256,address)": FunctionFragment;
     "owner()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "serviceFee()": FunctionFragment;
+    "tokens(string)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
+    "unlock(address,uint256,address)": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "burn",
+    values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "lock",
+    values: [BigNumberish, string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "mint",
+    values: [string, string, BigNumberish, BigNumberish, string]
+  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
@@ -36,31 +53,81 @@ interface BridgeInterface extends ethers.utils.Interface {
     functionFragment: "serviceFee",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "tokens", values: [string]): string;
   encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [string]
   ): string;
+  encodeFunctionData(
+    functionFragment: "unlock",
+    values: [string, BigNumberish, string]
+  ): string;
 
+  decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "lock", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "serviceFee", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "tokens", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "unlock", data: BytesLike): Result;
 
   events: {
+    "Burn(address,uint256,address)": EventFragment;
+    "Lock(uint8,address,uint256)": EventFragment;
+    "Mint(address,uint256,address)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
+    "Unlock(address,uint256,address)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "Burn"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Lock"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Mint"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Unlock"): EventFragment;
 }
+
+export type BurnEvent = TypedEvent<
+  [string, BigNumber, string] & {
+    token: string;
+    amount: BigNumber;
+    receiver: string;
+  }
+>;
+
+export type LockEvent = TypedEvent<
+  [number, string, BigNumber] & {
+    targetChain: number;
+    token: string;
+    amount: BigNumber;
+  }
+>;
+
+export type MintEvent = TypedEvent<
+  [string, BigNumber, string] & {
+    token: string;
+    amount: BigNumber;
+    receiver: string;
+  }
+>;
 
 export type OwnershipTransferredEvent = TypedEvent<
   [string, string] & { previousOwner: string; newOwner: string }
+>;
+
+export type UnlockEvent = TypedEvent<
+  [string, BigNumber, string] & {
+    token: string;
+    amount: BigNumber;
+    receiver: string;
+  }
 >;
 
 export class Bridge extends BaseContract {
@@ -107,6 +174,28 @@ export class Bridge extends BaseContract {
   interface: BridgeInterface;
 
   functions: {
+    burn(
+      _token: string,
+      _amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    lock(
+      _targetChain: BigNumberish,
+      _nativeToken: string,
+      _amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    mint(
+      _tokenName: string,
+      _tokenSymbol: string,
+      _tokenDecimals: BigNumberish,
+      _amount: BigNumberish,
+      _receiver: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     renounceOwnership(
@@ -115,11 +204,42 @@ export class Bridge extends BaseContract {
 
     serviceFee(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    tokens(arg0: string, overrides?: CallOverrides): Promise<[string]>;
+
     transferOwnership(
       newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    unlock(
+      _nativeToken: string,
+      _amount: BigNumberish,
+      _receiver: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
   };
+
+  burn(
+    _token: string,
+    _amount: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  lock(
+    _targetChain: BigNumberish,
+    _nativeToken: string,
+    _amount: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  mint(
+    _tokenName: string,
+    _tokenSymbol: string,
+    _tokenDecimals: BigNumberish,
+    _amount: BigNumberish,
+    _receiver: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
@@ -129,25 +249,119 @@ export class Bridge extends BaseContract {
 
   serviceFee(overrides?: CallOverrides): Promise<BigNumber>;
 
+  tokens(arg0: string, overrides?: CallOverrides): Promise<string>;
+
   transferOwnership(
     newOwner: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  unlock(
+    _nativeToken: string,
+    _amount: BigNumberish,
+    _receiver: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
+    burn(
+      _token: string,
+      _amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    lock(
+      _targetChain: BigNumberish,
+      _nativeToken: string,
+      _amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    mint(
+      _tokenName: string,
+      _tokenSymbol: string,
+      _tokenDecimals: BigNumberish,
+      _amount: BigNumberish,
+      _receiver: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     owner(overrides?: CallOverrides): Promise<string>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
     serviceFee(overrides?: CallOverrides): Promise<BigNumber>;
 
+    tokens(arg0: string, overrides?: CallOverrides): Promise<string>;
+
     transferOwnership(
       newOwner: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    unlock(
+      _nativeToken: string,
+      _amount: BigNumberish,
+      _receiver: string,
       overrides?: CallOverrides
     ): Promise<void>;
   };
 
   filters: {
+    "Burn(address,uint256,address)"(
+      token?: null,
+      amount?: null,
+      receiver?: null
+    ): TypedEventFilter<
+      [string, BigNumber, string],
+      { token: string; amount: BigNumber; receiver: string }
+    >;
+
+    Burn(
+      token?: null,
+      amount?: null,
+      receiver?: null
+    ): TypedEventFilter<
+      [string, BigNumber, string],
+      { token: string; amount: BigNumber; receiver: string }
+    >;
+
+    "Lock(uint8,address,uint256)"(
+      targetChain?: null,
+      token?: null,
+      amount?: null
+    ): TypedEventFilter<
+      [number, string, BigNumber],
+      { targetChain: number; token: string; amount: BigNumber }
+    >;
+
+    Lock(
+      targetChain?: null,
+      token?: null,
+      amount?: null
+    ): TypedEventFilter<
+      [number, string, BigNumber],
+      { targetChain: number; token: string; amount: BigNumber }
+    >;
+
+    "Mint(address,uint256,address)"(
+      token?: null,
+      amount?: null,
+      receiver?: null
+    ): TypedEventFilter<
+      [string, BigNumber, string],
+      { token: string; amount: BigNumber; receiver: string }
+    >;
+
+    Mint(
+      token?: null,
+      amount?: null,
+      receiver?: null
+    ): TypedEventFilter<
+      [string, BigNumber, string],
+      { token: string; amount: BigNumber; receiver: string }
+    >;
+
     "OwnershipTransferred(address,address)"(
       previousOwner?: string | null,
       newOwner?: string | null
@@ -163,9 +377,49 @@ export class Bridge extends BaseContract {
       [string, string],
       { previousOwner: string; newOwner: string }
     >;
+
+    "Unlock(address,uint256,address)"(
+      token?: null,
+      amount?: null,
+      receiver?: null
+    ): TypedEventFilter<
+      [string, BigNumber, string],
+      { token: string; amount: BigNumber; receiver: string }
+    >;
+
+    Unlock(
+      token?: null,
+      amount?: null,
+      receiver?: null
+    ): TypedEventFilter<
+      [string, BigNumber, string],
+      { token: string; amount: BigNumber; receiver: string }
+    >;
   };
 
   estimateGas: {
+    burn(
+      _token: string,
+      _amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    lock(
+      _targetChain: BigNumberish,
+      _nativeToken: string,
+      _amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    mint(
+      _tokenName: string,
+      _tokenSymbol: string,
+      _tokenDecimals: BigNumberish,
+      _amount: BigNumberish,
+      _receiver: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     renounceOwnership(
@@ -174,13 +428,44 @@ export class Bridge extends BaseContract {
 
     serviceFee(overrides?: CallOverrides): Promise<BigNumber>;
 
+    tokens(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
+
     transferOwnership(
       newOwner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    unlock(
+      _nativeToken: string,
+      _amount: BigNumberish,
+      _receiver: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
+    burn(
+      _token: string,
+      _amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    lock(
+      _targetChain: BigNumberish,
+      _nativeToken: string,
+      _amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    mint(
+      _tokenName: string,
+      _tokenSymbol: string,
+      _tokenDecimals: BigNumberish,
+      _amount: BigNumberish,
+      _receiver: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     renounceOwnership(
@@ -189,8 +474,20 @@ export class Bridge extends BaseContract {
 
     serviceFee(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    tokens(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     transferOwnership(
       newOwner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    unlock(
+      _nativeToken: string,
+      _amount: BigNumberish,
+      _receiver: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };

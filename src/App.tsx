@@ -17,26 +17,13 @@ import { getChainData } from "./helpers/utilities";
 // import Form from "./components/Form";
 
 import ethersHelper from "./helpers/ethers";
-import {
-  SOURCE_CHAIN_ADDRESS,
-  TARGET_CHAIN_ADDRESS,
-  TOKEN_ADDRESS,
-} from "./constants";
-import {
-  SOURCE_CHAIN_ABI,
-  TARGET_CHAIN_ABI,
-  TOKEN_ABI,
-} from "./constants/abis";
-import {
-  SourceChainBridge,
-  SourceChainBridge__factory,
-  TargetChainBridge,
-  TargetChainBridge__factory,
-  Token,
-  Token__factory,
-} from "./types";
+import { BRIDGE_ADDRESS, TOKEN_ADDRESS } from "./constants";
+import { BRIDGE_ABI, TOKEN_ABI } from "./constants/abis";
+import { Bridge, Bridge__factory, Token, Token__factory } from "./types";
+
 import Dropdown from "./components/ChainDropdown";
 import FormsWrapper from "./components/Forms/FormsWrapper";
+import { SUPPORTED_ASSETS } from "./constants/supportedAssets";
 
 const SLayout = styled.div`
   position: relative;
@@ -84,9 +71,7 @@ const App = () => {
   const [chainId, setChainId] = useState<number>(1);
   const [pendingRequest, setPedningRequest] = useState<boolean>(false);
   const [result, setResult] = useState<any>();
-  const [contract, setContract] = useState<
-    SourceChainBridge | TargetChainBridge | null
-  >(null);
+  const [contract, setContract] = useState<Bridge | null>(null);
   const [tokenContract, setTokenContract] = useState<Token | null>(null);
   const [info, setInfo] = useState<any>(null);
 
@@ -103,33 +88,21 @@ const App = () => {
       return;
     }
 
-    let contractAddress: string;
-    let abi: any;
-    let contract: SourceChainBridge | TargetChainBridge | null = null;
-    if (library._network.chainId === 42) {
-      contractAddress = SOURCE_CHAIN_ADDRESS;
-      abi = SOURCE_CHAIN_ABI;
-      contract = ethersHelper.getContract<
-        SourceChainBridge,
-        typeof SourceChainBridge__factory
-      >(SourceChainBridge__factory, contractAddress, library, address);
-    } else {
-      contractAddress = TARGET_CHAIN_ADDRESS;
-      abi = TARGET_CHAIN_ABI;
-      contract = ethersHelper.getContract<
-        TargetChainBridge,
-        typeof TargetChainBridge__factory
-      >(TargetChainBridge__factory, contractAddress, library, address);
+    const bridgeAddress = SUPPORTED_ASSETS.find(
+      (chain) => chain.chainId === chainId
+    )?.bridgeAddress;
+    if (!bridgeAddress) {
+      return;
     }
 
-    const tokenContract = ethersHelper.getContract<
-      Token,
-      typeof Token__factory
-    >(Token__factory, TOKEN_ADDRESS, library, address);
-
+    const contract = ethersHelper.getContract<Bridge, typeof Bridge__factory>(
+      Bridge__factory,
+      bridgeAddress,
+      library,
+      address
+    );
     setContract(contract);
-    setTokenContract(tokenContract);
-  }, [library, address]);
+  }, [library, address, chainId]);
 
   function createWeb3Modal() {
     web3Modal = new Web3Modal({
@@ -190,7 +163,7 @@ const App = () => {
   };
 
   function chainChanged(_chainId: number) {
-    window.location.reload();
+    onConnect();
   }
 
   function getNetwork() {
@@ -252,7 +225,11 @@ const App = () => {
               {!connected ? (
                 <ConnectButton onClick={onConnect} />
               ) : (
-                <FormsWrapper library={library} />
+                <FormsWrapper
+                  library={library}
+                  contract={contract}
+                  userAddress={address}
+                />
                 // <Form
                 //   contract={contract}
                 //   tokenContract={tokenContract}

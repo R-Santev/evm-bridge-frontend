@@ -1,28 +1,26 @@
-import React, { Component, useState } from "react";
+import React from "react";
 import styled from "styled-components";
 
-import {
-  ISupportedAsset,
-  SUPPORTED_ASSETS,
-} from "../constants/supportedAssets";
+import { ISupportedAsset } from "./../constants/supportedAssets";
 
 const StyledUl = styled.ul`
   list-style-type: none;
   margin: 0;
   padding: 0;
   overflow: hidden;
-  background-color: #333;
+  margin-bottom: 16px;
 `;
 
 const StyledLi = styled.li`
   float: left;
+  background-color: #333;
 `;
 
 const Dropbtn = styled.div`
   display: inline-block;
   color: white;
   text-align: center;
-  padding: 14px 16px;
+  padding: 6px 16px;
   text-decoration: none;
 `;
 
@@ -43,6 +41,8 @@ const DropDownLi = styled(StyledLi as any)`
   &:hover ${DropDownContent} {
     display: block;
   }
+  border: 1px solid black;
+  border-radius: 12px;
 `;
 
 const StyledA = styled.a`
@@ -58,7 +58,6 @@ const StyledA = styled.a`
 
 const SubA = styled.a`
   color: black;
-  padding: 12px 16px;
   text-decoration: none;
   display: block;
   text-align: left;
