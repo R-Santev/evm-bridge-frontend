@@ -33,14 +33,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Bridge__factory>;
     getContractFactory(
-      name: "SourceChainBridge",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.SourceChainBridge__factory>;
-    getContractFactory(
-      name: "TargetChainBridge",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.TargetChainBridge__factory>;
-    getContractFactory(
       name: "Token",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Token__factory>;
@@ -70,16 +62,6 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.Bridge>;
-    getContractAt(
-      name: "SourceChainBridge",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.SourceChainBridge>;
-    getContractAt(
-      name: "TargetChainBridge",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.TargetChainBridge>;
     getContractAt(
       name: "Token",
       address: string,

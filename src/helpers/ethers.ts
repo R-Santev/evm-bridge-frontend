@@ -1,7 +1,7 @@
 import { getAddress } from "@ethersproject/address";
 import { AddressZero } from "@ethersproject/constants";
 import { Provider } from "@ethersproject/providers";
-import { Signer } from "ethers";
+import { Contract, Signer } from "ethers";
 
 export function getContract<C, T extends IHardhatFactory<C>>(
   factory: T,
@@ -16,12 +16,17 @@ export function getContract<C, T extends IHardhatFactory<C>>(
   return factory.connect(address, getProviderOrSigner(library, account));
 }
 
-export default {
-  getContract,
-};
+export function getVanillaContract(
+  address: string,
+  ABI: any,
+  library: any,
+  account: any
+) {
+  if (!isAddress(address) || address === AddressZero) {
+    throw new Error(`Invalid 'address' parameter '${address}'.`);
+  }
 
-interface IHardhatFactory<T> {
-  connect: (address: string, signerOrProvider: Signer | Provider) => T;
+  return new Contract(address, ABI, getProviderOrSigner(library, account));
 }
 
 function isAddress(value: string) {
@@ -30,6 +35,16 @@ function isAddress(value: string) {
   } catch {
     return false;
   }
+}
+
+export default {
+  isAddress,
+  getContract,
+  getVanillaContract,
+};
+
+interface IHardhatFactory<T> {
+  connect: (address: string, signerOrProvider: Signer | Provider) => T;
 }
 
 function getSigner(library: any, account: any) {
