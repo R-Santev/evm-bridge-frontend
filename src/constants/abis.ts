@@ -186,10 +186,40 @@ export const BRIDGE_ABI = [
         name: "_receiver",
         type: "address",
       },
+      {
+        internalType: "address",
+        name: "_nativeToken",
+        type: "address",
+      },
     ],
     name: "mint",
-    outputs: [],
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    name: "nativeTokens",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {

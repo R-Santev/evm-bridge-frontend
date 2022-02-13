@@ -3,9 +3,9 @@ import styled from "styled-components";
 import Button from "../StyledComponents/Button";
 
 export const FormContainer = styled.div`
-  height: 80%;
+  height: 600px;
   min-height: 400px;
-  width: 400px
+  width: 500px
   margin: 15px
   display: flex;
   flex-direction: column;

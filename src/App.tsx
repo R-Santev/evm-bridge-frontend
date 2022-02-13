@@ -108,7 +108,7 @@ const App = () => {
     web3Modal = new Web3Modal({
       network: getNetwork(),
       cacheProvider: true,
-      providerOptions: getProviderOptions(),
+      // providerOptions: getProviderOptions(),
     });
   }
 
@@ -187,6 +187,7 @@ const App = () => {
     localStorage.removeItem("WEB3_CONNECT_CACHED_PROVIDER");
     localStorage.removeItem("walletconnect");
     await unSubscribe(provider);
+    window.location.reload();
   };
 
   const resetState = () => {
@@ -211,9 +212,7 @@ const App = () => {
           killSession={resetApp}
         />
         <SContent>
-          <p>
-            Bridge "TEST" tokens between the Kovan and the BSC Testnet networks
-          </p>
+          <p>Bridge ERC-20 tokens between EVM compatible networks</p>
           {fetching ? (
             <Column center>
               <SContainer>
