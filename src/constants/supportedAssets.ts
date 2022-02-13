@@ -21,4 +21,9 @@ export const SUPPORTED_ASSETS: ISupportedAsset[] = [
     name: "BSC Testnet",
     bridgeAddress: "0x1664Bd1B81c850313c29091dCb9e026C49F264b6",
   },
+  {
+    chainId: 4,
+    name: "Rinkeby",
+    bridgeAddress: "0x53E3c2744451b1D25dDbeaB326046b3BcB9D43a2",
+  },
 ];
