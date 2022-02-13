@@ -1,12 +1,21 @@
-# Web3 Boilerplate
+# EVM compatible ERC-20 tokens bridge
 
-Web3 Boilerplate is an easy-to-use starting project to help developers add support for multiple providers in their apps with a simple customizable configuration and use ethers for contract interactions.
-By default Web3Modal Library supports injected providers like (Metamask, Dapper, Gnosis Safe, Frame, Web3 Browsers, etc) and WalletConnect, You can also easily configure the library to support Portis, Fortmatic, Squarelink, Torus, Authereum, D'CENT Wallet and Arkane.
+This dApp provides a basic UI for interacting with the [Bridge Contract](https://github.com/R-Santev/evm-bridge).  
+Users can transfer ERC-20 tokens between all the provided networks by connecting to the source chain, selecting a token (add the address of the token in the input form), the amount they want to bridge and the target chain.
 
-- [web3modal](https://github.com/Web3Modal/web3modal/)
-- [ethers](https://docs.ethers.io/v5/)
+## There are three steps you have to complete:
 
-## Usage
+1. Approve the the amount of tokens.
+2. Bridge the tokens from the native chain (Lock or Burn function).
+3. Claim the bridged tokens to the target chain (Unlock or Mint function).
+
+**Note!** You cannot bridge native tokens on the selected network.
+
+## Visit the app
+
+There is a working version of the app [here](https://evm-bridge.pages.dev).
+
+## To run the app locally
 
 1. Install packages
 
@@ -27,4 +36,3 @@ npm run start
 
 yarn start
 ```
-
